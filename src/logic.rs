@@ -9,7 +9,7 @@ use coords::Coords;
 use state::{State, Bee, Activity};
 
 const BEE_GATHER_RATE: f64 = 0.6;
-const BEE_SPEED: i32 = 6;
+const BEE_SPEED: i32 = 5;
 
 pub struct Logic<'a> {
     events: Receiver<NewBee>,

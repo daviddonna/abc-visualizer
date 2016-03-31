@@ -25,7 +25,7 @@ use state::State;
 use logic::Logic;
 use visual::Visual;
 
-const FPS: u32 = 500;
+const FPS: u32 = 60;
 
 fn main() {
     env_logger::init().unwrap();
