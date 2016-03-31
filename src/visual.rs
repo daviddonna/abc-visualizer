@@ -8,20 +8,18 @@ use self::sdl2::pixels::{PixelFormatEnum as Format, Color};
 use state::State;
 use coords::Coords;
 
-const MIN_COLOR: [f64;3] = [5.0_f64, 20.0, 9.0];
-const MAX_COLOR: [f64;3] = [50.0_f64, 200.0, 90.0];
+const MIN_COLOR: [f64; 3] = [5.0_f64, 20.0, 9.0];
+const MAX_COLOR: [f64; 3] = [50.0_f64, 200.0, 90.0];
 
 pub struct Visual<'a> {
     renderer: Renderer<'a>,
-    texture: Option<Texture>,
-    min: Coords,
-    max: Coords,
+    texture: Texture,
     width: u32,
     height: u32,
 }
 
 impl<'a> Visual<'a> {
-    pub fn new(context: &'a Sdl, min: Coords, max: Coords) -> Visual<'a> {
+    pub fn new(context: &'a Sdl, min: Coords, max: Coords, state: &State) -> Visual<'a> {
         let width = (max.x - min.x) as u32;
         let height = (max.y - min.y) as u32;
 
@@ -31,27 +29,29 @@ impl<'a> Visual<'a> {
                                     .build()
                                     .unwrap();
         let renderer = window.renderer().build().unwrap();
-
+        let texture = Visual::make_texture(&renderer, state);
         Visual {
             renderer: renderer,
-            texture: None,
-            min: min,
-            max: max,
+            texture: texture,
             width: width,
             height: height,
         }
     }
 
-    pub fn make_texture(&mut self, state: &State) {
-        let mut texture = self.renderer
-                              .create_texture_streaming(Format::RGB24, self.width, self.height)
-                              .unwrap();
+    fn make_texture(renderer: &Renderer, state: &State) -> Texture {
+        let (min, max) = state.corners();
+        let Coords { x, y } = max - min;
+        let width = x as u32;
+        let height = y as u32;
 
-        let mut min_fitness = (state.fitness)(self.min.clone());
-        let mut max_fitness = (state.fitness)(self.max.clone());
+        let mut texture = renderer.create_texture_streaming(Format::RGB24, width, height)
+                                  .unwrap();
 
-        for x in self.min.x..(self.max.x + 1) {
-            for y in self.min.y..(self.max.y + 1) {
+        let mut min_fitness = (state.fitness)(min.clone());
+        let mut max_fitness = (state.fitness)(max.clone());
+
+        for x in min.x..(max.x + 1) {
+            for y in min.y..(max.y + 1) {
                 let fitness = (state.fitness)(Coords { x: x, y: y });
 
                 if fitness < min_fitness {
@@ -65,11 +65,11 @@ impl<'a> Visual<'a> {
 
         // Create a red-green gradient
         texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
-                   for y in 0..self.height {
-                       for x in 0..self.width {
+                   for y in 0..height {
+                       for x in 0..width {
                            let fitness = (state.fitness)(Coords {
-                               x: self.min.x + x as i32,
-                               y: self.min.y + y as i32,
+                               x: min.x + x as i32,
+                               y: min.y + y as i32,
                            });
                            let offset = (y * (pitch as u32) + x * 3) as usize;
 
@@ -84,8 +84,7 @@ impl<'a> Visual<'a> {
                    }
                })
                .unwrap();
-
-        self.texture = Some(texture);
+        texture
     }
 
     pub fn draw_bee(&mut self, location: Coords) {
@@ -107,7 +106,7 @@ impl<'a> Visual<'a> {
 
     pub fn render(&mut self, state: &State) {
         self.renderer.clear();
-        self.renderer.copy(self.texture.as_ref().unwrap(),
+        self.renderer.copy(&self.texture,
                            None,
                            Some(Rect::new(0, 0, self.width, self.height)));
         self.renderer.set_draw_color(Color::RGB(255, 255, 50));

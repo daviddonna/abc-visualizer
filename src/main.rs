@@ -65,10 +65,7 @@ fn main() {
     let sdl = sdl2::init().unwrap();
     let frame_time = 1000 / FPS;
 
-    let mut visual = Visual::new(&sdl, min, max);
-
-    visual.make_texture(&state);
-
+    let mut visual = Visual::new(&sdl, min, max, &state);
     let mut timer = sdl.timer().unwrap();
     let mut events = sdl.event_pump().unwrap();
 
