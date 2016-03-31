@@ -8,4 +8,4 @@ rand = "0.3.14"
 sdl2 = "0.16.1"
 log = "0.3.5"
 env_logger = "0.3.2"
-abc = { path = "/home/ddonna/Dropbox/code/rust/abc" }
+abc = "0.2.2"
