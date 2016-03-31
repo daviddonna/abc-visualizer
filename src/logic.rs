@@ -4,8 +4,9 @@ use std::sync::mpsc::Receiver;
 
 use self::abc::Candidate;
 
-use context::{NewBee, FitnessMover};
+use context::NewBee;
 use coords::Coords;
+use spmc::Queue;
 use state::{State, Bee, Activity};
 
 const BEE_GATHER_RATE: f64 = 0.6;
@@ -14,18 +15,18 @@ const BEE_SPEED: i32 = 5;
 pub struct Logic<'a> {
     events: Receiver<NewBee>,
     best: Receiver<Candidate<Coords>>,
-    mover: &'a FitnessMover,
+    queue: &'a Queue<f64>,
 }
 
 impl<'a> Logic<'a> {
     pub fn new(events: Receiver<NewBee>,
                best: Receiver<Candidate<Coords>>,
-               mover: &'a FitnessMover)
+               queue: &'a Queue<f64>)
                -> Logic<'a> {
         Logic {
             events: events,
             best: best,
-            mover: mover,
+            queue: queue,
         }
     }
 
@@ -85,7 +86,7 @@ impl<'a> Logic<'a> {
                                      Activity::Returning(n) => {
                                          self.move_towards(bee, hive_location);
                                          if bee.location == *hive_location {
-                                             self.mover.send(bee.id, n);
+                                             self.queue.send(bee.id, n);
                                              Some(i)
                                          } else {
                                              None

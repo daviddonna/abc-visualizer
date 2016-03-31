@@ -22,7 +22,8 @@ use sdl2::event::Event;
 use abc::{HiveBuilder, Candidate};
 
 use coords::Coords;
-use context::{FitnessMover, Ctx, NewBee};
+use spmc::Queue;
+use context::{Ctx, NewBee};
 use state::State;
 use logic::Logic;
 use visual::Visual;
@@ -55,12 +56,12 @@ fn main() {
     let (send_best, receive_best) = channel::<Candidate<Coords>>();
 
     let mut state = State::new(min, max, threads, fitness);
-    let mover = Arc::new(FitnessMover::new());
+    let queue = Arc::new(Queue::new());
 
-    let logic = Logic::new(receive_new_bees, receive_best, &mover);
+    let logic = Logic::new(receive_new_bees, receive_best, &queue);
     let mut visual = Visual::new(&sdl, &state);
 
-    let context = Ctx::new(mover.clone(), send_new_bees, min, max);
+    let context = Ctx::new(queue.clone(), send_new_bees, min, max);
     spawn(move || {
         let mut hive = HiveBuilder::new(context, workers).set_threads(threads).build().unwrap();
         hive.set_sender(send_best);
