@@ -86,6 +86,8 @@ impl<'a> Visual<'a> {
     pub fn draw_hive(&mut self, location: Coords) {
         self.renderer.set_draw_color(Color::RGB(200, 155, 50));
         self.renderer.fill_rect(Rect::new(location.x - 20, location.y - 30, 40, 50)).unwrap();
+        self.renderer.set_draw_color(Color::RGB(0, 0, 0));
+        self.renderer.fill_rect(Rect::new(location.x - 5, location.y - 5, 10, 10)).unwrap();
     }
 
     pub fn draw_best(&mut self, location: Coords) {
@@ -101,17 +103,17 @@ impl<'a> Visual<'a> {
         self.renderer.copy(&self.texture,
                            None,
                            Some(Rect::new(0, 0, state.width(), state.height())));
-        self.renderer.set_draw_color(Color::RGB(255, 255, 50));
 
         let (upper_left, _) = state.corners();
 
+        self.draw_hive(state.hive_location - upper_left);
+
+        self.renderer.set_draw_color(Color::RGB(255, 255, 50));
         for maybe in state.bees.iter() {
             if let Some(bee) = maybe.as_ref() {
                 self.draw_bee(bee.location - upper_left);
             }
         }
-
-        self.draw_hive(state.hive_location - upper_left);
 
         if let Some(&(ref coords, _)) = state.best.as_ref() {
             self.draw_best(coords.clone() - upper_left);
