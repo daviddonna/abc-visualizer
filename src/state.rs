@@ -56,6 +56,14 @@ impl State {
         (self.field.min.clone(), self.field.max.clone())
     }
 
+    pub fn width(&self) -> u32 {
+        (self.field.max.x - self.field.min.x) as u32
+    }
+
+    pub fn height(&self) -> u32 {
+        (self.field.max.y - self.field.min.y) as u32
+    }
+
     pub fn add_bee(&mut self, id: usize, coords: Coords) {
         let bee = Bee {
             id: id,

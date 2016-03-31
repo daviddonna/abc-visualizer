@@ -14,17 +14,12 @@ const MAX_COLOR: [f64; 3] = [50.0_f64, 200.0, 90.0];
 pub struct Visual<'a> {
     renderer: Renderer<'a>,
     texture: Texture,
-    width: u32,
-    height: u32,
 }
 
 impl<'a> Visual<'a> {
-    pub fn new(context: &'a Sdl, min: Coords, max: Coords, state: &State) -> Visual<'a> {
-        let width = (max.x - min.x) as u32;
-        let height = (max.y - min.y) as u32;
-
+    pub fn new(context: &'a Sdl, state: &State) -> Visual<'a> {
         let video_subsystem = context.video().unwrap();
-        let window = video_subsystem.window("Bees!", width, height)
+        let window = video_subsystem.window("Bees!", state.width(), state.height())
                                     .position_centered()
                                     .build()
                                     .unwrap();
@@ -33,22 +28,19 @@ impl<'a> Visual<'a> {
         Visual {
             renderer: renderer,
             texture: texture,
-            width: width,
-            height: height,
         }
     }
 
     fn make_texture(renderer: &Renderer, state: &State) -> Texture {
-        let (min, max) = state.corners();
-        let Coords { x, y } = max - min;
-        let width = x as u32;
-        let height = y as u32;
+        let width = state.width();
+        let height = state.height();
 
         let mut texture = renderer.create_texture_streaming(Format::RGB24, width, height)
                                   .unwrap();
 
-        let mut min_fitness = (state.fitness)(min.clone());
-        let mut max_fitness = (state.fitness)(max.clone());
+        let (min, max) = state.corners();
+        let mut min_fitness = (state.fitness)(min);
+        let mut max_fitness = (state.fitness)(min);
 
         for x in min.x..(max.x + 1) {
             for y in min.y..(max.y + 1) {
@@ -108,7 +100,7 @@ impl<'a> Visual<'a> {
         self.renderer.clear();
         self.renderer.copy(&self.texture,
                            None,
-                           Some(Rect::new(0, 0, self.width, self.height)));
+                           Some(Rect::new(0, 0, state.width(), state.height())));
         self.renderer.set_draw_color(Color::RGB(255, 255, 50));
 
         let (upper_left, _) = state.corners();

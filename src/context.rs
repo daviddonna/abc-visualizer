@@ -14,55 +14,6 @@ pub struct NewBee {
     pub coords: Coords,
 }
 
-pub struct Fitness {
-    pub id: usize,
-    pub fitness: f64,
-}
-
-pub struct FitnessMover {
-    fitness: Mutex<Option<Fitness>>,
-    produced: Condvar,
-    consumed: Condvar,
-}
-
-impl FitnessMover {
-    pub fn new() -> FitnessMover {
-        FitnessMover {
-            fitness: Mutex::new(None),
-            produced: Condvar::new(),
-            consumed: Condvar::new(),
-        }
-    }
-
-    pub fn send(&self, id: usize, fitness: f64) {
-        let mut guard = self.fitness.lock().unwrap();
-        while guard.is_some() {
-            guard = self.consumed.wait(guard).unwrap();
-        }
-        *guard = Some(Fitness {
-            id: id,
-            fitness: fitness,
-        });
-        self.produced.notify_all()
-    }
-
-    fn _wait_for(&self, mut guard: MutexGuard<Option<Fitness>>, id: usize) -> f64 {
-        match *guard {
-            Some(Fitness {id: id2, fitness}) if id2 == id => {
-                *guard = None;
-                self.consumed.notify_one();
-                fitness
-            }
-            _ => self._wait_for(self.produced.wait(guard).unwrap(), id),
-        }
-    }
-
-    pub fn wait_for(&self, id: usize) -> f64 {
-        let guard = self.fitness.lock().unwrap();
-        self._wait_for(guard, id)
-    }
-}
-
 pub struct Ctx {
     id: Mutex<usize>,
     new_bees: Mutex<Sender<NewBee>>,

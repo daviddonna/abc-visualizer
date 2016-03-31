@@ -6,6 +6,7 @@ extern crate log;
 extern crate env_logger;
 
 mod coords;
+mod spmc;
 mod context;
 mod state;
 mod logic;
@@ -33,6 +34,9 @@ fn main() {
 
     info!("starting");
 
+    let sdl = sdl2::init().unwrap();
+    let frame_time = 1000 / FPS;
+
     let threads = 40_usize;
     let workers = 20_usize;
     let min = Coords { x: -256, y: -256 };
@@ -50,25 +54,21 @@ fn main() {
     let (send_new_bees, receive_new_bees) = channel::<NewBee>();
     let (send_best, receive_best) = channel::<Candidate<Coords>>();
 
-    let mut state = State::new(min.clone(), max.clone(), threads, fitness);
+    let mut state = State::new(min, max, threads, fitness);
     let mover = Arc::new(FitnessMover::new());
-    let context = Ctx::new(mover.clone(), send_new_bees, min.clone(), max.clone());
 
     let logic = Logic::new(receive_new_bees, receive_best, &mover);
+    let mut visual = Visual::new(&sdl, &state);
 
+    let context = Ctx::new(mover.clone(), send_new_bees, min, max);
     spawn(move || {
         let mut hive = HiveBuilder::new(context, workers).set_threads(threads).build().unwrap();
         hive.set_sender(send_best);
         hive.run_forever().unwrap()
     });
 
-    let sdl = sdl2::init().unwrap();
-    let frame_time = 1000 / FPS;
-
-    let mut visual = Visual::new(&sdl, min, max, &state);
     let mut timer = sdl.timer().unwrap();
     let mut events = sdl.event_pump().unwrap();
-
     let mut start_ticks;
 
     'running: loop {
