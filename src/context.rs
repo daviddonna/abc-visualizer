@@ -103,13 +103,13 @@ impl Context for Ctx {
 
         let new_bee_guard = self.new_bees.lock().unwrap();
         new_bee_guard.send(NewBee {
-            id: id,
-            coords: solution.clone(),
-        }).expect("failed to send new bee");
+                         id: id,
+                         coords: solution.clone(),
+                     })
+                     .expect("failed to send new bee");
         drop(new_bee_guard);
 
-        let f = self.fitness_mover.wait_for(id);
-        f
+        self.fitness_mover.wait_for(id)
     }
 
     fn explore(&self, field: &[Candidate<Coords>], n: usize) -> Coords {

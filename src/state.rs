@@ -63,7 +63,10 @@ impl State {
             assignment: coords,
             activity: Activity::Seeking,
         };
-        let index = self.bees.iter().position(|b| b.is_none()).expect("no available bee slot");
+        let index = self.bees
+                        .iter()
+                        .position(|b| b.is_none())
+                        .expect("no available bee slot");
         self.bees[index] = Some(bee);
     }
 }

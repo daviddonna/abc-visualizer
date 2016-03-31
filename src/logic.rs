@@ -53,7 +53,7 @@ impl<'a> Logic<'a> {
             state.best = Some((best.solution, best.fitness));
         }
 
-        // Split the borrow so that we can use the fitness.
+        // Split the borrow to use the fitness function while mutating bees.
         let bees = &mut state.bees;
         let get_fitness = &state.fitness;
         let hive_location = &state.hive_location;
