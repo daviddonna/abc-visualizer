@@ -1,5 +1,6 @@
 extern crate abc;
 extern crate sdl2;
+
 #[macro_use]
 extern crate log;
 extern crate env_logger;
@@ -66,9 +67,7 @@ fn main() {
 
     let mut visual = Visual::new(&sdl, min, max);
 
-    let min_color = [5.0_f64, 20.0, 9.0];
-    let max_color = [50.0_f64, 200.0, 90.0];
-    visual.make_texture(&state, min_color, max_color);
+    visual.make_texture(&state);
 
     let mut timer = sdl.timer().unwrap();
     let mut events = sdl.event_pump().unwrap();

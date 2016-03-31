@@ -8,6 +8,9 @@ use self::sdl2::pixels::{PixelFormatEnum as Format, Color};
 use state::State;
 use coords::Coords;
 
+const MIN_COLOR: [f64;3] = [5.0_f64, 20.0, 9.0];
+const MAX_COLOR: [f64;3] = [50.0_f64, 200.0, 90.0];
+
 pub struct Visual<'a> {
     renderer: Renderer<'a>,
     texture: Option<Texture>,
@@ -39,7 +42,7 @@ impl<'a> Visual<'a> {
         }
     }
 
-    pub fn make_texture(&mut self, state: &State, min_color: [f64; 3], max_color: [f64; 3]) {
+    pub fn make_texture(&mut self, state: &State) {
         let mut texture = self.renderer
                               .create_texture_streaming(Format::RGB24, self.width, self.height)
                               .unwrap();
@@ -72,8 +75,8 @@ impl<'a> Visual<'a> {
 
                            for i in 0..3 {
                                let ratio = (fitness - min_fitness) / (max_fitness - min_fitness);
-                               let c = (min_color[i] +
-                                        ((max_color[i] - min_color[i]) *
+                               let c = (MIN_COLOR[i] +
+                                        ((MAX_COLOR[i] - MIN_COLOR[i]) *
                                          ratio)) as u8;
                                buffer[offset + i] = c;
                            }
