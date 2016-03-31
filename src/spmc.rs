@@ -45,7 +45,7 @@ impl<T: Clone + Send> Queue<T> {
                 self.consumed.notify_one();
                 item
             }
-            None => self._wait_for(self.produced.wait(guard).unwrap(), id)
+            None => self._wait_for(self.produced.wait(guard).unwrap(), id),
         }
     }
 

@@ -24,11 +24,7 @@ pub struct Ctx {
 }
 
 impl Ctx {
-    pub fn new(queue: Arc<Queue<f64>>,
-               new_bees: Sender<NewBee>,
-               min: Coords,
-               max: Coords)
-               -> Ctx {
+    pub fn new(queue: Arc<Queue<f64>>, new_bees: Sender<NewBee>, min: Coords, max: Coords) -> Ctx {
         Ctx {
             id: Mutex::new(0),
             new_bees: Mutex::new(new_bees),
