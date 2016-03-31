@@ -7,12 +7,12 @@ use std::sync::{Mutex, MutexGuard, Condvar};
 /// Each time a new item is produced, the consumers all wake up and
 /// examine it, and the producer who was waiting for that item's ID
 /// actually consumes the item.
-pub struct Queue<T: Clone + Send> {
+pub struct Queue<T> {
     container: Mutex<Vec<(usize, T)>>,
     produced: Condvar,
 }
 
-impl<T: Clone + Send> Queue<T> {
+impl<T> Queue<T> {
     pub fn new() -> Queue<T> {
         Queue {
             container: Mutex::new(Vec::new()),
@@ -21,6 +21,8 @@ impl<T: Clone + Send> Queue<T> {
     }
 
     pub fn send(&self, id: usize, item: T) {
+        // The guard is only ever held inside this code,
+        // none of which is known to be able to panic and poison the lock.
         let mut guard = self.container.lock().unwrap();
         guard.push((id, item));
         self.produced.notify_all()
