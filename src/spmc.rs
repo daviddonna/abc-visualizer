@@ -32,13 +32,20 @@ impl<T: Clone + Send> Queue<T> {
     }
 
     fn _wait_for(&self, mut guard: MutexGuard<Option<(usize, T)>>, id: usize) -> T {
-        match guard.clone() {
-            Some((id2, ref item)) if id2 == id => {
+        let found = guard.as_ref().map_or(None, |&(id2, ref item)| {
+            if id2 == id {
+                Some(item.clone())
+            } else {
+                None
+            }
+        });
+        match found {
+            Some(item) => {
                 *guard = None;
                 self.consumed.notify_one();
-                item.clone()
+                item
             }
-            _ => self._wait_for(self.produced.wait(guard).unwrap(), id),
+            None => self._wait_for(self.produced.wait(guard).unwrap(), id)
         }
     }
 
