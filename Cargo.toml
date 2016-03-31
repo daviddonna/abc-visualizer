@@ -1,0 +1,11 @@
+[package]
+name = "bees"
+version = "0.1.0"
+authors = ["David Donna <davidadonna@gmail.com>"]
+
+[dependencies]
+rand = "0.3.14"
+sdl2 = "0.16.1"
+log = "0.3.5"
+env_logger = "0.3.2"
+abc = { path = "/home/ddonna/Dropbox/code/rust/abc" }
