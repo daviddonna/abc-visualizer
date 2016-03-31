@@ -1,5 +1,4 @@
 use std::sync::{Mutex, MutexGuard, Condvar};
-use std::collections::VecDeque;
 
 /// Deliver fitnesses to the threads that requested them.
 ///
@@ -9,28 +8,28 @@ use std::collections::VecDeque;
 /// examine it, and the producer who was waiting for that item's ID
 /// actually consumes the item.
 pub struct Queue<T: Clone + Send> {
-    container: Mutex<VecDeque<(usize, T)>>,
+    container: Mutex<Vec<(usize, T)>>,
     produced: Condvar,
 }
 
 impl<T: Clone + Send> Queue<T> {
     pub fn new() -> Queue<T> {
         Queue {
-            container: Mutex::new(VecDeque::new()),
+            container: Mutex::new(Vec::new()),
             produced: Condvar::new(),
         }
     }
 
     pub fn send(&self, id: usize, item: T) {
         let mut guard = self.container.lock().unwrap();
-        guard.push_back((id, item));
+        guard.push((id, item));
         self.produced.notify_all()
     }
 
-    fn _wait_for(&self, mut guard: MutexGuard<VecDeque<(usize, T)>>, id: usize) -> T {
+    fn _wait_for(&self, mut guard: MutexGuard<Vec<(usize, T)>>, id: usize) -> T {
         match guard.iter().position(|&(id2, _)| id2 == id) {
             Some(index) => {
-                let (_, item) = guard.remove(index).unwrap();
+                let (_, item) = guard.remove(index);
                 item
             }
             None => {
